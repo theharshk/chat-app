@@ -1,0 +1,22 @@
+# Node modules (VERY important — don't upload this!)
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# dotenv environment variables (if using .env for secrets)
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Optional: VSCode config (if you don’t want to share personal editor settings)
+.vscode/
