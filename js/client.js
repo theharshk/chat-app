@@ -1,4 +1,4 @@
-const socket = io('http://localhost:8000');
+const socket = io('https://chatapp-backend-production-6607.up.railway.app');
 
 //GET DOM ELEMENTS IN THE JS FILE
 const form = document.getElementById('send-container');
@@ -39,14 +39,11 @@ socket.on('left', data => {
     append(`${data} left the chat`, 'left');
 });
 
-
-
-//if the form is submitted, send server the message
-form.addEventListener('submit', (e)=>{
+form.addEventListener('submit', (e) => {
     e.preventDefault();
     const message = messageInput.value;
     append(`You: ${message}`, 'right');
     socket.emit('send', message);
     messageInput.value = '';
-})
+});
 
