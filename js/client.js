@@ -126,43 +126,54 @@ form.addEventListener('submit', (e) => {
     const message = messageInput.value.trim();
     const file = fileInp.files[0];
 
-    // If a file is selected
+    // ✅ NEW: File size validation (2.5MB limit)
+    if (file && file.size > 2.5 * 1024 * 1024) {
+        alert("File too large. Please upload a file under 2.5MB.");
+        return;
+    }
+
+    // ✅ Modified version with try-catch and comments
     if (file) {
         const reader = new FileReader();
         reader.onload = () => {
-            let mediaElement;
+            try {
+                let mediaElement;
 
-            if (file.type.startsWith("image/")) {
-                mediaElement = document.createElement("img");
-                mediaElement.src = reader.result;
-                mediaElement.style.maxWidth = "200px";
-                mediaElement.style.borderRadius = "12px";
-            } else if (file.type.startsWith("video/")) {
-                mediaElement = document.createElement("video");
-                mediaElement.src = reader.result;
-                mediaElement.controls = true;
-                mediaElement.style.maxWidth = "250px";
-                mediaElement.style.borderRadius = "12px";
-            } else {
-                mediaElement = document.createElement("a");
-                mediaElement.href = reader.result;
-                mediaElement.download = file.name;
-                mediaElement.innerText = `📎 Download ${file.name}`;
+                if (file.type.startsWith("image/")) {
+                    mediaElement = document.createElement("img");
+                    mediaElement.src = reader.result;
+                    mediaElement.style.maxWidth = "200px";
+                    mediaElement.style.borderRadius = "12px";
+                } else if (file.type.startsWith("video/")) {
+                    mediaElement = document.createElement("video");
+                    mediaElement.src = reader.result;
+                    mediaElement.controls = true;
+                    mediaElement.style.maxWidth = "250px";
+                    mediaElement.style.borderRadius = "12px";
+                } else {
+                    mediaElement = document.createElement("a");
+                    mediaElement.href = reader.result;
+                    mediaElement.download = file.name;
+                    mediaElement.innerText = `📎 Download ${file.name}`;
+                }
+
+                // Show the file to sender immediately
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('message', 'right');
+                wrapper.appendChild(mediaElement);
+                messageContainer.appendChild(wrapper);
+                messageContainer.scrollTop = messageContainer.scrollHeight;
+
+                // Emit file data to others
+                socket.emit("file-message", {
+                    name: file.name,
+                    type: file.type,
+                    data: reader.result
+                });
+            } catch (err) {
+                console.error("File send error:", err);
+                alert("Failed to send file. Try again.");
             }
-
-            // Show the file to sender immediately
-            const wrapper = document.createElement('div');
-            wrapper.classList.add('message', 'right');
-            wrapper.appendChild(mediaElement);
-            messageContainer.appendChild(wrapper);
-            messageContainer.scrollTop = messageContainer.scrollHeight;
-
-            // Emit file data to others
-            socket.emit("file-message", {
-                name: file.name,
-                type: file.type,
-                data: reader.result
-            });
         };
         reader.readAsDataURL(file);
     }
