@@ -19,10 +19,14 @@
     <main class="chat-box">
         <div class="container" id="message-container"></div>
 
-        <form id="send-container" autocomplete="off">
-            <input type="text" id="messageInp" placeholder="Type something magical..." />
-            <button class="btn" type="submit">➤</button>
+        <form id="send-container">
+            <input type="text" id="messageInp" placeholder="Type your message..." autocomplete="off" />
+            <input type="file" id="fileInp" accept="image/*,video/*,application/pdf" hidden />
+            <label for="fileInp" class="file-btn">📎</label>
+            <button class="btn" type="submit">Send</button>
         </form>
+
+
     </main>
 </body>
 
