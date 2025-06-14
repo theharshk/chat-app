@@ -40,6 +40,79 @@ socket.on('left', data => {
 });
 //WHEN THE FORM IS SUBMITTED SEND THE MESSAGE TO THE SERVER
 const fileInp = document.getElementById("fileInp");
+// Handle file message reception / sending
+const filePreview = document.getElementById("filePreview");
+
+// SHOW FILE PREVIEW BEFORE SUBMISSION
+fileInp.addEventListener("change", () => {
+    const file = fileInp.files[0];
+    filePreview.innerHTML = '';
+
+    if (!file) {
+        filePreview.style.display = "none";
+        return;
+    }
+
+    const previewBox = document.createElement("div");
+    previewBox.style.border = "1px solid #ddd";
+    previewBox.style.padding = "10px";
+    previewBox.style.borderRadius = "10px";
+    previewBox.style.background = "#f9f9f9";
+    previewBox.style.margin = "10px";
+    previewBox.style.display = "flex";
+    previewBox.style.alignItems = "center";
+    previewBox.style.justifyContent = "space-between";
+    previewBox.style.gap = "10px";
+
+    // Media preview
+    let media;
+    if (file.type.startsWith("image/")) {
+        media = document.createElement("img");
+        media.src = URL.createObjectURL(file);
+        media.style.maxWidth = "60px";
+        media.style.borderRadius = "6px";
+    } else if (file.type.startsWith("video/")) {
+        media = document.createElement("video");
+        media.src = URL.createObjectURL(file);
+        media.muted = true;
+        media.autoplay = true;
+        media.loop = true;
+        media.style.maxWidth = "80px";
+        media.style.borderRadius = "6px";
+    } else {
+        media = document.createElement("span");
+        media.innerText = "📄";
+        media.style.fontSize = "24px";
+    }
+
+    // Info
+    const info = document.createElement("div");
+    info.innerHTML = `<strong>${file.name}</strong><br><small>${(file.size / 1024).toFixed(1)} KB</small>`;
+
+    // Cancel Button
+    const cancelBtn = document.createElement("button");
+    cancelBtn.innerText = "❌ Cancel";
+    cancelBtn.style.border = "none";
+    cancelBtn.style.background = "#ff4d4d";
+    cancelBtn.style.color = "white";
+    cancelBtn.style.padding = "5px 10px";
+    cancelBtn.style.borderRadius = "6px";
+    cancelBtn.style.cursor = "pointer";
+
+    cancelBtn.onclick = () => {
+        fileInp.value = '';
+        filePreview.innerHTML = '';
+        filePreview.style.display = "none";
+    };
+
+    // Append everything
+    previewBox.appendChild(media);
+    previewBox.appendChild(info);
+    previewBox.appendChild(cancelBtn);
+    filePreview.appendChild(previewBox);
+    filePreview.style.display = "block";
+});
+
 
 socket.on("file-receive", (data) => {
     let mediaElement;
