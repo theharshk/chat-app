@@ -78,6 +78,32 @@ form.addEventListener('submit', (e) => {
     if (file) {
         const reader = new FileReader();
         reader.onload = () => {
+            // 👇 Show the media to sender
+            let mediaElement;
+            if (file.type.startsWith("image/")) {
+                mediaElement = document.createElement("img");
+                mediaElement.src = reader.result;
+                mediaElement.style.maxWidth = "200px";
+                mediaElement.style.borderRadius = "12px";
+            } else if (file.type.startsWith("video/")) {
+                mediaElement = document.createElement("video");
+                mediaElement.src = reader.result;
+                mediaElement.controls = true;
+                mediaElement.style.maxWidth = "250px";
+            } else {
+                mediaElement = document.createElement("a");
+                mediaElement.href = reader.result;
+                mediaElement.download = file.name;
+                mediaElement.innerText = `📎 Download ${file.name}`;
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('message', 'right'); // 👈 sender style
+            wrapper.appendChild(mediaElement);
+            messageContainer.appendChild(wrapper);
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+
+            // 📤 Send to others
             socket.emit("file-message", {
                 name: file.name,
                 type: file.type,
@@ -95,4 +121,5 @@ form.addEventListener('submit', (e) => {
     messageInput.value = '';
     fileInp.value = '';
 });
+
 
