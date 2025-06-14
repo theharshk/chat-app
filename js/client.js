@@ -1,119 +1,94 @@
+// Connect to backend Socket.IO server
 const socket = io('https://chatapp-backend-production-6607.up.railway.app');
 
-//GET DOM ELEMENTS IN THE JS FILE
+// DOM elements
 const form = document.getElementById('send-container');
 const messageInput = document.getElementById('messageInp');
 const messageContainer = document.querySelector(".container");
-
-//AUDIO THE WIL PLAY WHEN A NEW MESSAGE IS GOING TO RECEIVED
-var audio = new Audio('onii_chan_message.mp3');
-
-//FUCTION WHICH WILL APPENDS NEW ELENMENTS TO THE CONTAINER
-const append = (message, position) => {
-    const messageElement = document.createElement('div');
-    messageElement.innerText = message; 
-    messageElement.classList.add('message', position);
-    messageContainer.append(messageElement);
-    if (position == 'left') {
-        audio.play();
-    }
- 
-};
-
-// // Prompt user for name to join the chat
-const chatname = prompt("Enter your name to join the chat:");
-
-// console.log("Emitted new-user-joined:", chatname);
-//IF A NEW USER JOINS LET OTHERS KNOW
-socket.emit('new-user-joined', chatname);
-// console.log("Received user-joined event:", chatname);
-socket.on('user-joined', chatname => {
-    append(`${chatname} joined the chat`, 'left');
-});
-// IF SERVERS SENDS A MESSAGE AND RECEIVE IT
-socket.on('receive', data => {
-    append(`${data.name}:${data.message}`, 'left');
-});
-//IF A USERS LEFT THE CHAT APPENDS THE INFO TO THE CONTAINER
-socket.on('left', data => {
-    append(`${data} left the chat`, 'left');
-});
-//WHEN THE FORM IS SUBMITTED SEND THE MESSAGE TO THE SERVER
 const fileInp = document.getElementById("fileInp");
-// Handle file message reception / sending
 const filePreview = document.getElementById("filePreview");
 
-// SHOW FILE PREVIEW BEFORE SUBMISSION
-fileInp.addEventListener("change", () => {
-    const file = fileInp.files[0];
-    filePreview.innerHTML = '';
+// Incoming message notification audio
+const audio = new Audio('onii_chan_message.mp3');
 
-    if (!file) {
-        filePreview.style.display = "none";
-        return;
-    }
+// Function to append a text message to the chat container
+const append = (message, position) => {
+    const messageElement = document.createElement('div');
+    messageElement.innerText = message;
+    messageElement.classList.add('message', position);
+    messageContainer.appendChild(messageElement);
 
-    const previewBox = document.createElement("div");
-    previewBox.style.border = "1px solid #ddd";
-    previewBox.style.padding = "10px";
-    previewBox.style.borderRadius = "10px";
-    previewBox.style.background = "#f9f9f9";
-    previewBox.style.margin = "10px";
-    previewBox.style.display = "flex";
-    previewBox.style.alignItems = "center";
-    previewBox.style.justifyContent = "space-between";
-    previewBox.style.gap = "10px";
+    // Play sound only for incoming messages
+    if (position === 'left') audio.play();
 
-    // Media preview
-    let media;
-    if (file.type.startsWith("image/")) {
-        media = document.createElement("img");
-        media.src = URL.createObjectURL(file);
-        media.style.maxWidth = "60px";
-        media.style.borderRadius = "6px";
-    } else if (file.type.startsWith("video/")) {
-        media = document.createElement("video");
-        media.src = URL.createObjectURL(file);
-        media.muted = true;
-        media.autoplay = true;
-        media.loop = true;
-        media.style.maxWidth = "80px";
-        media.style.borderRadius = "6px";
-    } else {
-        media = document.createElement("span");
-        media.innerText = "📄";
-        media.style.fontSize = "24px";
-    }
+    // Always scroll to bottom after new message
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+};
 
-    // Info
-    const info = document.createElement("div");
-    info.innerHTML = `<strong>${file.name}</strong><br><small>${(file.size / 1024).toFixed(1)} KB</small>`;
+// Ask user for their name and notify server
+const chatname = prompt("Enter your name to join the chat:");
+socket.emit('new-user-joined', chatname);
 
-    // Cancel Button
-    const cancelBtn = document.createElement("button");
-    cancelBtn.innerText = "❌ Cancel";
-    cancelBtn.style.border = "none";
-    cancelBtn.style.background = "#ff4d4d";
-    cancelBtn.style.color = "white";
-    cancelBtn.style.padding = "5px 10px";
-    cancelBtn.style.borderRadius = "6px";
-    cancelBtn.style.cursor = "pointer";
-
-    cancelBtn.onclick = () => {
-        fileInp.value = '';
-        filePreview.innerHTML = '';
-        filePreview.style.display = "none";
-    };
-
-    // Append everything
-    previewBox.appendChild(media);
-    previewBox.appendChild(info);
-    previewBox.appendChild(cancelBtn);
-    filePreview.appendChild(previewBox);
-    filePreview.style.display = "block";
+// Listen for new user joins
+socket.on('user-joined', name => {
+    append(`${name} joined the chat`, 'left');
 });
 
+// Listen for incoming messages
+socket.on('receive', data => {
+    append(`${data.name}: ${data.message}`, 'left');
+});
 
+// Listen for users leaving
+socket.on('left', name => {
+    append(`${name} left the chat`, 'left');
+});
+
+// Show file preview before sending
+fileInp.addEventListener("change", () => {
+    const file = fileInp.files[0];
+    const previewBox = document.getElementById("filePreview");
+    previewBox.innerHTML = ""; // Clear existing preview
+
+    if (file) {
+        const previewContent = document.createElement("div");
+        previewContent.classList.add("file-name");
+
+        if (file.type.startsWith("image/")) {
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(file);
+            img.style.maxWidth = "120px";
+            img.style.borderRadius = "8px";
+            previewContent.appendChild(img);
+        } else if (file.type.startsWith("video/")) {
+            const video = document.createElement("video");
+            video.src = URL.createObjectURL(file);
+            video.muted = true;
+            video.controls = true;
+            video.style.maxWidth = "120px";
+            video.style.borderRadius = "8px";
+            previewContent.appendChild(video);
+        } else {
+            previewContent.innerText = `📎 ${file.name}`;
+        }
+
+        // Add close button to cancel preview
+        const closeBtn = document.createElement("button");
+        closeBtn.innerText = "x";
+        closeBtn.classList.add("close-btn");
+        closeBtn.onclick = () => {
+            fileInp.value = "";
+            previewBox.style.display = "none";
+            previewBox.innerHTML = "";
+        };
+
+        previewBox.appendChild(previewContent);
+        previewBox.appendChild(closeBtn);
+        previewBox.style.display = "flex";
+    }
+});
+
+// Receive file messages from server and display them
 socket.on("file-receive", (data) => {
     let mediaElement;
 
@@ -127,6 +102,7 @@ socket.on("file-receive", (data) => {
         mediaElement.src = data.data;
         mediaElement.controls = true;
         mediaElement.style.maxWidth = "250px";
+        mediaElement.style.borderRadius = "12px";
     } else {
         mediaElement = document.createElement("a");
         mediaElement.href = data.data;
@@ -134,25 +110,28 @@ socket.on("file-receive", (data) => {
         mediaElement.innerText = `📎 Download ${data.name}`;
     }
 
+    // Wrap and append as an incoming message
     const wrapper = document.createElement('div');
     wrapper.classList.add('message', 'left');
     wrapper.appendChild(mediaElement);
     messageContainer.appendChild(wrapper);
     audio.play();
+    messageContainer.scrollTop = messageContainer.scrollHeight;
 });
 
-
+// Handle sending message or file on form submission
 form.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const message = messageInput.value;
+    const message = messageInput.value.trim();
     const file = fileInp.files[0];
 
+    // If a file is selected
     if (file) {
         const reader = new FileReader();
         reader.onload = () => {
-            // 👇 Show the media to sender
             let mediaElement;
+
             if (file.type.startsWith("image/")) {
                 mediaElement = document.createElement("img");
                 mediaElement.src = reader.result;
@@ -163,6 +142,7 @@ form.addEventListener('submit', (e) => {
                 mediaElement.src = reader.result;
                 mediaElement.controls = true;
                 mediaElement.style.maxWidth = "250px";
+                mediaElement.style.borderRadius = "12px";
             } else {
                 mediaElement = document.createElement("a");
                 mediaElement.href = reader.result;
@@ -170,13 +150,14 @@ form.addEventListener('submit', (e) => {
                 mediaElement.innerText = `📎 Download ${file.name}`;
             }
 
+            // Show the file to sender immediately
             const wrapper = document.createElement('div');
-            wrapper.classList.add('message', 'right'); // 👈 sender style
+            wrapper.classList.add('message', 'right');
             wrapper.appendChild(mediaElement);
             messageContainer.appendChild(wrapper);
             messageContainer.scrollTop = messageContainer.scrollHeight;
 
-            // 📤 Send to others
+            // Emit file data to others
             socket.emit("file-message", {
                 name: file.name,
                 type: file.type,
@@ -186,13 +167,15 @@ form.addEventListener('submit', (e) => {
         reader.readAsDataURL(file);
     }
 
-    if (message.trim() !== '') {
+    // If message text is present, send it
+    if (message) {
         append(`You: ${message}`, 'right');
         socket.emit('send', message);
     }
 
+    // Clear form fields and preview
     messageInput.value = '';
     fileInp.value = '';
+    filePreview.innerHTML = '';
+    filePreview.style.display = 'none';
 });
-
-

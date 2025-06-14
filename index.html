@@ -1,36 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chat App </title>
-    <link rel="stylesheet" href="css/style.css" />
-    <script defer src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
-    <script defer src="js/client.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat App</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script defer src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+  <script defer src="js/client.js"></script>
 </head>
-
 <body>
-    <nav>
-        <img class="logo" src="chat.jpg" alt="Chat Logo" />
-        <h1>💬 Chatoora</h1>
-    </nav>
+  <nav>
+    <img class="logo" src="chat.jpg" alt="Chat Logo" />
+    <h1>💬 Chatoora</h1>
+  </nav>
 
-    <main class="chat-box">
-        <div id="filePreview" style="display: none;"></div>
+  <main class="chat-box">
+    <!-- Message display container -->
+    <div class="container" id="message-container"></div>
 
-        <div class="container" id="message-container"></div>
-        
+    <!-- File Preview box -->
+    <div id="filePreview" style="display: none;"></div>
 
-        <form id="send-container">
-            <input type="text" id="messageInp" placeholder="Type your message..." autocomplete="off" />
-            <input type="file" id="fileInp" accept="image/*,video/*,application/pdf" hidden />
-            <label for="fileInp" class="file-btn">📎</label>
-            <button class="btn" type="submit">Send</button>
-        </form>
-
-
-    </main>
+    <!-- Input form -->
+    <form id="send-container">
+      <input type="text" id="messageInp" placeholder="Type your message..." autocomplete="off" />
+      <input type="file" id="fileInp" accept="image/*,video/*,application/pdf" hidden />
+      <label for="fileInp" class="file-btn">📎</label>
+      <button class="btn" type="submit">Send</button>
+    </form>
+  </main>
 </body>
-
 </html>
