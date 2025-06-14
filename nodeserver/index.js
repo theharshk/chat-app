@@ -1,14 +1,25 @@
 // Node server which whill handle socket io connections and serve the frontend files
+const http = require("http");
+const { Server } = require("socket.io");
+
 const PORT = process.env.PORT || 8000;
 
-const io = require('socket.io')(PORT, {
-    cors: {
-        origin: ["https://chatappbyha.netlify.app"],
-        methods: ["GET", "POST"]
-    }
+// Basic HTTP server to respond with 200 OK
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  res.end("Socket.IO Server Running");
 });
 
+const io = new Server(server, {
+  cors: {
+    origin: ["https://chatappbyha.netlify.app"],
+    methods: ["GET", "POST"],
+  },
+});
 
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
 const user = {};
 
 io.on('connection', socket => {
