@@ -9,7 +9,7 @@ const fileInp = document.getElementById("fileInp");
 const filePreview = document.getElementById("filePreview");
 
 // Incoming message notification audio
-const audio = new Audio('onii_chan_message.mp3');
+const audio = new Audio('ringtone.mp3');
 
 // Function to append a text message to the chat container
 const append = (message, position) => {

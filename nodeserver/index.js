@@ -1,5 +1,4 @@
-// // // Node server which whill handle socket io connections and serve the frontend files
-// Node server which whill handle socket io connections and serve the frontend files
+// Node server which will handle socket io connections and serve the frontend files
 const http = require("http");
 const { Server } = require("socket.io");
 
@@ -18,6 +17,11 @@ const io = new Server(server, {
     origin: ["https://chatappbyha.netlify.app"],
     methods: ["GET", "POST"],
   },
+  // ✅ START: Increased buffer and connection stability settings
+  pingTimeout: 60000, // Time in ms before a connection is considered lost. (Default: 5000)
+  pingInterval: 25000, // Time in ms for ping packets. (Default: 25000)
+  maxHttpBufferSize: 1e8 // Increase buffer size to 100 MB. (Default: 1e6 or 1MB)
+  // ✅ END: Increased buffer and connection stability settings
 });
 
 server.listen(PORT, () => {
@@ -48,6 +52,7 @@ io.on('connection', socket => {
   // ✅ File upload size limit and error-safe broadcasting
   socket.on('file-message', fileData => {
     try {
+      // It's good practice to still have a client-side or application-level check
       if (fileData?.data?.length > 3_500_000) {
         console.warn(`⚠️ File too large from ${users[socket.id] || socket.id}`);
         return;
