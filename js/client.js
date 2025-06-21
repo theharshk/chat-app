@@ -18,10 +18,7 @@ const append = (message, position) => {
     messageElement.classList.add('message', position);
     messageContainer.appendChild(messageElement);
 
-    // Play sound only for incoming messages
     if (position === 'left') audio.play();
-
-    // Always scroll to bottom after new message
     messageContainer.scrollTop = messageContainer.scrollHeight;
 };
 
@@ -34,9 +31,21 @@ socket.on('user-joined', name => {
     append(`${name} joined the chat`, 'left');
 });
 
-// Listen for incoming messages
+// ✅ UPDATED: Allow AI-generated HTML (e.g., image tag)
 socket.on('receive', data => {
-    append(`${data.name}: ${data.message}`, 'left');
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('message', 'left');
+
+    // ✅ AI messages may return HTML like <img>
+    if (data.name === "🤖 AI" && data.message.startsWith("<")) {
+        wrapper.innerHTML = data.message;
+    } else {
+        wrapper.innerText = `${data.name}: ${data.message}`;
+    }
+
+    messageContainer.appendChild(wrapper);
+    audio.play();
+    messageContainer.scrollTop = messageContainer.scrollHeight;
 });
 
 // Listen for users leaving
@@ -47,8 +56,8 @@ socket.on('left', name => {
 // Show file preview before sending
 fileInp.addEventListener("change", () => {
     const file = fileInp.files[0];
-    const previewBox = document.getElementById("filePreview");
-    previewBox.innerHTML = ""; // Clear existing preview
+    const previewBox = filePreview;
+    previewBox.innerHTML = "";
 
     if (file) {
         const previewContent = document.createElement("div");
@@ -72,7 +81,6 @@ fileInp.addEventListener("change", () => {
             previewContent.innerText = `📎 ${file.name}`;
         }
 
-        // Add close button to cancel preview
         const closeBtn = document.createElement("button");
         closeBtn.innerText = "x";
         closeBtn.classList.add("close-btn");
@@ -110,7 +118,6 @@ socket.on("file-receive", (data) => {
         mediaElement.innerText = `📎 Download ${data.name}`;
     }
 
-    // Wrap and append as an incoming message
     const wrapper = document.createElement('div');
     wrapper.classList.add('message', 'left');
     wrapper.appendChild(mediaElement);
@@ -126,13 +133,22 @@ form.addEventListener('submit', (e) => {
     const message = messageInput.value.trim();
     const file = fileInp.files[0];
 
-    // ✅ NEW: File size validation (2.5MB limit)
+    // ✅ NEW: File size validation (2.5MB)
     if (file && file.size > 2.5 * 1024 * 1024) {
         alert("File too large. Please upload a file under 2.5MB.");
         return;
     }
 
-    // ✅ Modified version with try-catch and comments
+    // ✅ NEW: AI trigger using "@ai <prompt>"
+    if (message.startsWith("@ai")) {
+        const aiPrompt = message.slice(3).trim();
+        append(`You (to AI): ${aiPrompt}`, 'right');
+        socket.emit("ai-message", aiPrompt);
+        messageInput.value = '';
+        return;
+    }
+
+    // Handle file upload
     if (file) {
         const reader = new FileReader();
         reader.onload = () => {
@@ -157,14 +173,12 @@ form.addEventListener('submit', (e) => {
                     mediaElement.innerText = `📎 Download ${file.name}`;
                 }
 
-                // Show the file to sender immediately
                 const wrapper = document.createElement('div');
                 wrapper.classList.add('message', 'right');
                 wrapper.appendChild(mediaElement);
                 messageContainer.appendChild(wrapper);
                 messageContainer.scrollTop = messageContainer.scrollHeight;
 
-                // Emit file data to others
                 socket.emit("file-message", {
                     name: file.name,
                     type: file.type,
@@ -178,13 +192,13 @@ form.addEventListener('submit', (e) => {
         reader.readAsDataURL(file);
     }
 
-    // If message text is present, send it
+    // Handle text message
     if (message) {
         append(`You: ${message}`, 'right');
         socket.emit('send', message);
     }
 
-    // Clear form fields and preview
+    // Reset input
     messageInput.value = '';
     fileInp.value = '';
     filePreview.innerHTML = '';
