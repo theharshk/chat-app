@@ -36,21 +36,39 @@ socket.on('user-joined', name => {
 });
 
 // ✅ UPDATED: Allow AI-generated HTML (e.g., image tag)
+// socket.on('receive', data => {
+//     const wrapper = document.createElement('div');
+//     wrapper.classList.add('message', 'left');
+
+//     // ✅ AI messages may return HTML like <img>
+//     if (data.name === "🤖 AI" && data.message.startsWith("<")) {
+//         wrapper.innerHTML = data.message;
+//     } else {
+//         wrapper.innerText = `${data.name}: ${data.message}`;
+//     }
+
+//     messageContainer.appendChild(wrapper);
+//     audio.play();
+//     messageContainer.scrollTop = messageContainer.scrollHeight;
+// });
+// AI message (with potential HTML or Markdown)
 socket.on('receive', data => {
     const wrapper = document.createElement('div');
     wrapper.classList.add('message', 'left');
 
-    // ✅ AI messages may return HTML like <img>
+    // If AI is sending HTML (like <img>), trust it but sanitize
     if (data.name === "🤖 AI" && data.message.startsWith("<")) {
-        wrapper.innerHTML = data.message;
+        wrapper.innerHTML = DOMPurify.sanitize(data.message);
     } else {
-        wrapper.innerText = `${data.name}: ${data.message}`;
+        // Convert Markdown → HTML → sanitized
+        wrapper.innerHTML = DOMPurify.sanitize(marked.parse(`${data.name}: ${data.message}`));
     }
 
     messageContainer.appendChild(wrapper);
     audio.play();
     messageContainer.scrollTop = messageContainer.scrollHeight;
 });
+
 
 // Listen for users leaving
 socket.on('left', name => {
