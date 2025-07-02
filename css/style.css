@@ -285,3 +285,24 @@ h1 {
     bottom: 90px;
   }
 }
+/* Fix for Markdown-rendered lists inside messages */
+.message ul,
+.message ol {
+  margin-left: 1rem;
+  padding-left: 1.2rem;
+  list-style-position: inside;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.message li {
+  margin-bottom: 0.4rem;
+  line-height: 1.5;
+}
+
+/* Optional: improve horizontal scroll safety */
+.message {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+/* Fix for Markdown-rendered code blocks */
