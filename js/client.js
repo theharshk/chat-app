@@ -14,7 +14,7 @@ const audio = new Audio('ringtone.mp3');
 // Function to append a text message to the chat container
 const append = (message, position) => {
     const messageElement = document.createElement('div');
-    messageElement.innerText = message;
+    messageElement.innerHTML = DOMPurify.sanitize(marked.parse(message));
     messageElement.classList.add('message', position);
     messageContainer.appendChild(messageElement);
 
