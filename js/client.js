@@ -1,10 +1,14 @@
+document.addEventListener("DOMContentLoaded", () => {
+  // Paste full client.js code inside here
+
+
 // Connect to backend Socket.IO server
 const socket = io('https://chatapp-backend-production-6607.up.railway.app');
 
 // DOM elements
 const form = document.getElementById('send-container');
 const messageInput = document.getElementById('messageInp');
-const messageContainer = document.querySelector(".container");
+const messageContainer = document.getElementById("message-container");
 const fileInp = document.getElementById("fileInp");
 const filePreview = document.getElementById("filePreview");
 
@@ -203,4 +207,5 @@ form.addEventListener('submit', (e) => {
     fileInp.value = '';
     filePreview.innerHTML = '';
     filePreview.style.display = 'none';
+});
 });
